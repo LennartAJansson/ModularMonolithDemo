@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="FastEndpoints" Version="8.0.1" />
+		<PackageReference Include="FastEndpoints.Swagger" Version="8.0.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.3">
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		  <PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="MySql.EntityFrameworkCore" Version="10.0.1" />
+		<PackageReference Include="Scalar.AspNetCore" Version="2.12.53" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ModularEvents\ModularEvents.csproj" />
+		<ProjectReference Include="..\Events.Abstract\Events.Abstract.csproj" />
+		<ProjectReference Include="..\CustomersContract\CustomersContract.csproj" />
+	</ItemGroup>
+
+</Project>

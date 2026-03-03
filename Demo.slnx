@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/Events/">
+    <Project Path="CustomersContract/CustomersContract.csproj" />
+    <Project Path="EmployeesContract/EmployeesContract.csproj" />
+    <Project Path="Events.Abstract/Events.Abstract.csproj" />
+    <Project Path="MicroEvents/MicroEvents.csproj" />
+    <Project Path="ModularEvents/ModularEvents.csproj" />
+  </Folder>
+  <Folder Name="/MicroServices/">
+    <Project Path="CustomersApi/CustomersApi.csproj" />
+    <Project Path="EmployeesApi/EmployeesApi.csproj" />
+    <Project Path="WorkloadsApi/WorkloadsApi.csproj" />
+  </Folder>
+  <Folder Name="/Modules/">
+    <Project Path="CustomersModule/CustomersModule.csproj" />
+    <Project Path="EmployeesModule/EmployeesModule.csproj" />
+    <Project Path="WorkloadsModule/WorkloadsModule.csproj" />
+  </Folder>
+  <Folder Name="/Monolith/">
+    <Project Path="ModularApi/ModularApi.csproj" />
+  </Folder>
+</Solution>
