@@ -19,4 +19,7 @@
   <Folder Name="/Monolith/">
     <Project Path="ModularApi/ModularApi.csproj" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="ReadMe.md" />
+  </Folder>
 </Solution>

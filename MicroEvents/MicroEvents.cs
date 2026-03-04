@@ -75,7 +75,8 @@ public sealed class MicroEvents
       streamName,
       new ConsumerConfig
       {
-        DurableName = $"{typeof(TEvent).Name}Consumer",
+        Name = $"{typeof(TEvent).Name}Consumer",
+        FilterSubject = subject,
         AckPolicy = ConsumerConfigAckPolicy.Explicit
       },
       cancellationToken);

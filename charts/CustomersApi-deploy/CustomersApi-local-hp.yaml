@@ -1,0 +1,47 @@
+# Values for customersapi in local-hp cluster
+
+replicaCount: 1
+
+image:
+  repository: "registry:5000"
+  tag: ""
+  pullPolicy: IfNotPresent
+
+applicationType: dotnet-webapi
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  className: traefik
+  annotations: {}
+  hosts:
+    - host: customersapi.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    enabled: true
+    secretName: customersapi-tls
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+serviceMonitor:
+  enabled: true
+  interval: 30s
+
+

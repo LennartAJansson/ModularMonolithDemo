@@ -1,0 +1,182 @@
+{{- if .Values.prometheusRule.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "app.fullname" . }}-alerts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+    prometheus: kube-prometheus
+spec:
+  groups:
+    # HTTP Performance Alerts
+    - name: {{ include "app.fullname" . }}.http
+      interval: 30s
+      rules:
+        - alert: HighErrorRate
+          expr: |
+            (
+              sum(rate(http_server_request_duration_seconds_count{job="{{ include "app.fullname" . }}", status=~"5.."}[5m]))
+              /
+              sum(rate(http_server_request_duration_seconds_count{job="{{ include "app.fullname" . }}"}[5m]))
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            app: {{ include "app.fullname" . }}
+          annotations:
+            summary: "High error rate in {{ include "app.fullname" . }}"
+            description: "More than 5% of requests are returning 5xx errors (current: {{`{{ $value | humanizePercentage }}`}})"
+
+        - alert: CriticalErrorRate
+          expr: |
+            (
+              sum(rate(http_server_request_duration_seconds_count{job="{{ include "app.fullname" . }}", status=~"5.."}[5m]))
+              /
+              sum(rate(http_server_request_duration_seconds_count{job="{{ include "app.fullname" . }}"}[5m]))
+            ) > 0.10
+          for: 2m
+          labels:
+            severity: critical
+            app: {{ include "app.fullname" . }}
+          annotations:
+            summary: "Critical error rate in {{ include "app.fullname" . }}"
+            description: "More than 10% of requests are returning 5xx errors (current: {{`{{ $value | humanizePercentage }}`}})"
+
+        - alert: HighResponseTime
+          expr: |
+            histogram_quantile(0.95, 
+              sum(rate(http_server_request_duration_seconds_bucket{job="{{ include "app.fullname" . }}"}[5m])) by (le)
+            ) > 1
+          for: 5m
+          labels:
+            severity: warning
+            app: {{ include "app.fullname" . }}
+          annotations:
+            summary: "High response time in {{ include "app.fullname" . }}"
+            description: "95th percentile response time is above 1 second (current: {{`{{ $value }}s`}})"
+
+    # Memory Alerts
+    - name: {{ include "app.fullname" . }}.memory
+      interval: 30s
+      rules:
+        - alert: HighMemoryUsage
+          expr: |
+            (
+              container_memory_working_set_bytes{namespace="{{ .Release.Namespace }}", pod=~"{{ include "app.fullname" . }}-.*", container!=""}
+              /
+              container_spec_memory_limit_bytes{namespace="{{ .Release.Namespace }}", pod=~"{{ include "app.fullname" . }}-.*", container!=""}
+            ) > 0.85
+          for: 5m
+          labels:
+            severity: warning
+            app: {{ include "app.fullname" . }}
+          annotations:
+            summary: "High memory usage in {{ include "app.fullname" . }}"
+            description: "Container {{`{{ $labels.container }}`}} in pod {{`{{ $labels.pod }}`}} is using more than 85% of memory limit (current: {{`{{ $value | humanizePercentage }}`}})"
+
+        - alert: CriticalMemoryUsage
+          expr: |
+            (
+              container_memory_working_set_bytes{namespace="{{ .Release.Namespace }}", pod=~"{{ include "app.fullname" . }}-.*", container!=""}
+              /
+              container_spec_memory_limit_bytes{namespace="{{ .Release.Namespace }}", pod=~"{{ include "app.fullname" . }}-.*", container!=""}
+            ) > 0.95
+          for: 2m
+          labels:
+            severity: critical
+            app: {{ include "app.fullname" . }}
+          annotations:
+            summary: "Critical memory usage in {{ include "app.fullname" . }}"
+            description: "Container {{`{{ $labels.container }}`}} in pod {{`{{ $labels.pod }}`}} is using more than 95% of memory limit (current: {{`{{ $value | humanizePercentage }}`}})"
+
+    # CPU Alerts
+    - name: {{ include "app.fullname" . }}.cpu
+      interval: 30s
+      rules:
+        - alert: CPUThrottling
+          expr: |
+            (
+              rate(container_cpu_cfs_throttled_seconds_total{namespace="{{ .Release.Namespace }}", pod=~"{{ include "app.fullname" . }}-.*", container!=""}[5m])
+              /
+              rate(container_cpu_cfs_periods_total{namespace="{{ .Release.Namespace }}", pod=~"{{ include "app.fullname" . }}-.*", container!=""}[5m])
+            ) > 0.25
+          for: 10m
+          labels:
+            severity: warning
+            app: {{ include "app.fullname" . }}
+          annotations:
+            summary: "CPU throttling in {{ include "app.fullname" . }}"
+            description: "Container {{`{{ $labels.container }}`}} in pod {{`{{ $labels.pod }}`}} is being throttled more than 25% of the time (current: {{`{{ $value | humanizePercentage }}`}})"
+
+        - alert: HighCPUUsage
+          expr: |
+            (
+              rate(container_cpu_usage_seconds_total{namespace="{{ .Release.Namespace }}", pod=~"{{ include "app.fullname" . }}-.*", container!=""}[5m])
+              /
+              container_spec_cpu_quota{namespace="{{ .Release.Namespace }}", pod=~"{{ include "app.fullname" . }}-.*", container!=""}
+              * 100000
+            ) > 0.85
+          for: 5m
+          labels:
+            severity: warning
+            app: {{ include "app.fullname" . }}
+          annotations:
+            summary: "High CPU usage in {{ include "app.fullname" . }}"
+            description: "Container {{`{{ $labels.container }}`}} in pod {{`{{ $labels.pod }}`}} is using more than 85% of CPU limit (current: {{`{{ $value | humanizePercentage }}`}})"
+
+    # Database Alerts (MySQL)
+    - name: {{ include "app.fullname" . }}.database
+      interval: 30s
+      rules:
+        - alert: DatabaseConnectionFailure
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{job="{{ include "app.fullname" . }}", status="503"}[5m])) > 0
+          for: 2m
+          labels:
+            severity: critical
+            app: {{ include "app.fullname" . }}
+          annotations:
+            summary: "Database connection failures in {{ include "app.fullname" . }}"
+            description: "{{ include "app.fullname" . }} is experiencing database connection failures"
+
+    # Application Availability Alerts
+    - name: {{ include "app.fullname" . }}.availability
+      interval: 30s
+      rules:
+        - alert: ServiceDown
+          expr: |
+            up{job="{{ include "app.fullname" . }}"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            app: {{ include "app.fullname" . }}
+          annotations:
+            summary: "Service down for {{ include "app.fullname" . }}"
+            description: "{{ include "app.fullname" . }} has been down for more than 2 minutes"
+
+        - alert: NoPodsRunning
+          expr: |
+            sum(kube_pod_status_phase{namespace="{{ .Release.Namespace }}", pod=~"{{ include "app.fullname" . }}-.*", phase="Running"}) == 0
+          for: 5m
+          labels:
+            severity: critical
+            app: {{ include "app.fullname" . }}
+          annotations:
+            summary: "No pods running for {{ include "app.fullname" . }}"
+            description: "No running pods found for {{ include "app.fullname" . }}"
+
+        - alert: PodCrashLooping
+          expr: |
+            rate(kube_pod_container_status_restarts_total{namespace="{{ .Release.Namespace }}", pod=~"{{ include "app.fullname" . }}-.*"}[15m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            app: {{ include "app.fullname" . }}
+          annotations:
+            summary: "Pod crash looping in {{ include "app.fullname" . }}"
+            description: "Pod {{`{{ $labels.pod }}`}} has restarted {{`{{ $value }}`}} times in the last 15 minutes"
+{{- end }}
+
+

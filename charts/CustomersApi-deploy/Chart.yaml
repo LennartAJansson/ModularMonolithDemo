@@ -1,0 +1,19 @@
+apiVersion: v2
+name: customersapi
+description: Helm chart for customersapi - A .NET Web API with full observability
+type: application
+version: 0.1.0
+appVersion: "0.0.1"
+
+keywords:
+  - dotnet
+  - webapi
+  - observability
+  - prometheus
+  - loki
+  - configuration
+
+maintainers:
+  - name: customersapi Team
+
+

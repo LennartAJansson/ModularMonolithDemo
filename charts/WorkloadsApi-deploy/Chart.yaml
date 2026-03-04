@@ -1,0 +1,19 @@
+apiVersion: v2
+name: workloadsapi
+description: Helm chart for workloadsapi - A .NET Web API with full observability
+type: application
+version: 0.1.0
+appVersion: "0.0.1"
+
+keywords:
+  - dotnet
+  - webapi
+  - observability
+  - prometheus
+  - loki
+  - configuration
+
+maintainers:
+  - name: workloadsapi Team
+
+

@@ -1,0 +1,169 @@
+# Application type: angular-spa, dotnet-webapi, dotnet-worker
+applicationType: dotnet-webapi
+
+image:
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+
+# Replica configuration
+replicaCount: 1
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+# Ingress configuration (for angular-spa and dotnet-webapi)
+ingress:
+  enabled: true
+  className: traefik
+  annotations: {}
+  hosts:
+    - host: workloadsapi.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    enabled: true
+    secretName: ""  # Will be set by deploy script
+
+# Resource limits and requests
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+# Security context
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  runAsNonRoot: true
+  fsGroup: 1000
+
+# Init containers
+initContainers:
+  waitForMySQL:
+    enabled: true  # Enable for applications that use MySQL
+    image: busybox:1.35
+    host: mysql.mysql.svc.cluster.local
+    port: 3306
+
+# Persistent volume
+persistence:
+  enabled: false
+  storageClass: "local-path"
+  size: 1Gi
+  mountPath: /data
+
+# Health checks (dotnet only)
+healthChecks:
+  enabled: true
+  liveness:
+    path: /health/live
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    path: /health/ready
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# ServiceMonitor for Prometheus (dotnet only)
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+  path: /metrics
+
+# PrometheusRule for alerts
+prometheusRule:
+  enabled: true
+  namespace: monitoring
+  labels:
+    prometheus: kube-prometheus
+
+# Environment variables
+env: []
+  # - name: ASPNETCORE_ENVIRONMENT
+  #   value: Production
+
+# ConfigMap for application settings
+configMap:
+  enabled: false
+  data: {}
+
+# Sealed secrets configuration
+sealedSecret:
+  enabled: true
+
+# Horizontal Pod Autoscaler
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
+# Observability configuration
+observability:
+  # Prometheus metrics
+  prometheus:
+    enabled: true
+    port: 8080
+    path: /metrics
+    scrapeInterval: 30s
+
+  # ServiceMonitor for Prometheus Operator
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
+    interval: 30s
+    scrapeTimeout: 10s
+    labels:
+      release: kube-prometheus-stack
+
+  # Loki logging
+  loki:
+    enabled: true
+    uri: http://loki.monitoring.svc.cluster.local:3100
+
+  # OpenTelemetry (for Tempo/Jaeger)
+  opentelemetry:
+    enabled: false
+    otlpEndpoint: ""
+
+  # Alerting rules
+  alerting:
+    enabled: false
+    namespace: monitoring
+    labels:
+      release: kube-prometheus-stack
+
+# Network Policy
+networkPolicy:
+  enabled: false
+  ingress: []
+  egress: []
+
+# Labels and annotations
+labels: {}
+annotations: {}
+
+# Pod labels and annotations
+podLabels: {}
+podAnnotations: {}
+
+
