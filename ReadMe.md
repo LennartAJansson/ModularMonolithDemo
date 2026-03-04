@@ -350,14 +350,51 @@ builder.Services.AddMicroEvents(builder.Configuration);
 1. **Skapa en Customer** via CustomersApi (Scalar UI: `https://customersapi.local/scalar/v1`)
    - CustomerCreated event publiceras till NATS
    - WorkloadsApi lyssnar och sparar customer lokalt
+   - Exempel payload:
+   ```json
+   {
+     "orgNumber": "1234567890",
+     "name": "Testbolaget",
+     "email": "info@testbolaget.se",
+     "phoneNumber": "012345678",
+     "address": "Testgatan 1",
+     "postalCode": "12345",
+     "city": "Teststad"
+   }
+   ```
 
 2. **Skapa en Employee** via EmployeesApi (Scalar UI: `https://employeesapi.local/scalar/v1`)
    - EmployeeCreated event publiceras till NATS
    - WorkloadsApi lyssnar och sparar employee lokalt
+   - Exempel payload:
+   ```json
+   {
+     "ssn": "1234567890",
+     "firstName": "Test",
+     "lastName": "Testsson",
+     "email": "test.testsson@testbolaget.se",
+     "phoneNumber": "012345678",
+     "address": "Testgatan 10",
+     "postalCode": "12345",
+     "city": "Teststad",
+     "salary": 10,
+     "hireDate": "-2026-01-01T08:00:00+00:00"
+   }
+   ```
 
 3. **Skapa en Workload** via WorkloadsApi (Scalar UI: `https://workloadsapi.local/scalar/v1`)
    - Använd CustomerID och EmployeeID från tidigare
    - WorkloadsApi hämtar CustomerName och EmployeeName från sin lokala databas
+   - Exempel payload:
+   ```json
+   {
+     "startDate": "2026-01-01T08:00:00+00:00",
+     "stopDate": "2026-01-01T17:00:00+00:00",
+     "comment": "Migrering",
+     "customerId": "Det id som skapades för Customer",
+     "employeeId": "Det id som skapades för Employee"
+   }
+   ```
 
 4. **Lista Workloads**
    - Se att CustomerName och EmployeeName visas korrekt
