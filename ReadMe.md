@@ -1,5 +1,7 @@
 # Event-Driven Microservices Demo
 
+THIS DEMONSTRATION IS FOR PERSONAL USE ONLY AND NOT AFFILATED WITH ANY COMPANIES OR ORGANISATIONS! THE CONTENT IS CONSIDERED AS OPEN SOURCE!  
+
 En demonstration av hur enkelt det är att migrera från **Modular Monolith** till **Microservices** genom event-driven arkitektur med .NET 10.
 
 ## 🏛️ Arkitektoniska Mönster: Monolith → Modular Monolith → Microservices
